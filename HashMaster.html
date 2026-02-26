@@ -29,7 +29,7 @@
     <script src="./crypto-js.min.js" onerror="console.warn('[HashMaster] crypto-js.min.js 未找到，RIPEMD-160/Whirlpool 不可用')"></script>
     <!-- CRC32 → window.CRC32 -->
     <script src="./crc32.min.js" onerror="console.warn('[HashMaster] crc32.min.js 未找到，CRC32 不可用')"></script>
-    <!-- Adler32 → window.Adler32 -->
+    <!-- Adler32 → window.ADLER32 -->
     <script src="./adler32.min.js" onerror="console.warn('[HashMaster] adler32.min.js 未找到，Adler32 不可用')"></script>
     <!-- SM3 → window.smCrypto -->
     <script src="./sm-crypto.min.js" onerror="console.warn('[HashMaster] sm-crypto.min.js 未找到，SM3 不可用')"></script>
@@ -314,10 +314,10 @@
               }
               return c.toString(16).padStart(4, '0');
           }},
-        // 需 adler32.min.js → window.Adler32
+        // 需 adler32.min.js → window.ADLER32
         { category:'校验和', label:'Adler32', value:'Adler32', defaultOn:false,
-          available: () => isLibAvailable('Adler32'),
-          compute: b => (Adler32.buf(new Uint8Array(b)) >>> 0).toString(16).padStart(8, '0') },
+          available: () => isLibAvailable('ADLER32'),
+          compute: b => (ADLER32.buf(new Uint8Array(b)) >>> 0).toString(16).padStart(8, '0') },
         // 需 crypto-js.min.js → window.CryptoJS.algo.Whirlpool
         { category:'校验和', label:'Whirlpool', value:'Whirlpool', defaultOn:false,
           available: () => isLibAvailable('CryptoJS') && !!(CryptoJS.algo && CryptoJS.algo.Whirlpool),
@@ -680,7 +680,7 @@
         { file:'blakejs.min.js',    globals:['blakejs'],                          url:'https://cdn.jsdelivr.net/npm/blakejs/blakejs.min.js',             algos:'BLAKE2b-512、BLAKE2s-256' },
         { file:'crypto-js.min.js',  globals:['CryptoJS'],                        url:'https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.js',             algos:'RIPEMD-160、Whirlpool' },
         { file:'crc32.min.js',      globals:['CRC32'],                           url:'https://cdn.jsdelivr.net/npm/crc-32/crc32.min.js',               algos:'CRC32' },
-        { file:'adler32.min.js',    globals:['Adler32'],                         url:'https://cdn.jsdelivr.net/npm/adler-32/adler32.min.js',           algos:'Adler32' },
+        { file:'adler32.min.js',    globals:['ADLER32'],                         url:'https://cdn.jsdelivr.net/npm/adler-32/adler32.min.js',           algos:'Adler32' },
         { file:'sm-crypto.min.js',  globals:['smCrypto'],                        url:'https://cdn.jsdelivr.net/npm/sm-crypto/dist/sm-crypto.min.js',   algos:'SM3' },
     ];
     function checkMissingLibs() {
