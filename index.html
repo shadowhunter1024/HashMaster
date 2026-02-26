@@ -209,6 +209,13 @@
 
 <div id="toast" class="toast"></div>
 
+<!-- 缺失 JS 库提示横幅 -->
+<div id="missingLibBanner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:1000;background:#fef3c7;border-bottom:2px solid #f59e0b;color:#92400e;padding:10px 60px 10px 16px;font-size:0.85rem;line-height:1.8;">
+    <strong>⚠ 部分哈希算法不可用</strong>——请将以下文件下载后放到 <code style="background:rgba(0,0,0,0.08);padding:1px 4px;border-radius:3px;">index.html</code> 同目录，然后刷新页面：
+    <ul id="missingLibList" style="margin:4px 0 0 20px;padding:0;"></ul>
+    <button onclick="document.getElementById('missingLibBanner').style.display='none'" style="position:absolute;top:8px;right:14px;background:transparent;border:none;cursor:pointer;font-size:1.3rem;line-height:1;color:#92400e;" title="关闭">✕</button>
+</div>
+
 <script>
     // ============================================================
     // 工具函数
@@ -666,8 +673,31 @@
     function copyText(t) { if(t==='...')return; navigator.clipboard.writeText(t).then(()=>showToast('已复制')); }
     function formatSize(b) { if(!b) return '0 B'; const i = Math.floor(Math.log(b)/Math.log(1024)); return (b/Math.pow(1024,i)).toFixed(2)+' '+['B','KB','MB','GB','TB'][i]; }
 
+    // --- 缺失库检测 ---
+    const LIB_META = [
+        { file:'spark-md5.min.js',  globals:['SparkMD5'],                        url:'https://cdn.jsdelivr.net/npm/spark-md5/spark-md5.min.js',         algos:'MD5' },
+        { file:'sha3.min.js',       globals:['sha3_256','sha3_512','keccak_256'], url:'https://cdn.jsdelivr.net/npm/js-sha3/build/sha3.min.js',          algos:'SHA3-256、SHA3-512、Keccak-256' },
+        { file:'blakejs.min.js',    globals:['blakejs'],                          url:'https://cdn.jsdelivr.net/npm/blakejs/blakejs.min.js',             algos:'BLAKE2b-512、BLAKE2s-256' },
+        { file:'crypto-js.min.js',  globals:['CryptoJS'],                        url:'https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.js',             algos:'RIPEMD-160、Whirlpool' },
+        { file:'crc32.min.js',      globals:['CRC32'],                           url:'https://cdn.jsdelivr.net/npm/crc-32/crc32.min.js',               algos:'CRC32' },
+        { file:'adler32.min.js',    globals:['Adler32'],                         url:'https://cdn.jsdelivr.net/npm/adler-32/adler32.min.js',           algos:'Adler32' },
+        { file:'sm-crypto.min.js',  globals:['smCrypto'],                        url:'https://cdn.jsdelivr.net/npm/sm-crypto/dist/sm-crypto.min.js',   algos:'SM3' },
+    ];
+    function checkMissingLibs() {
+        const missing = LIB_META.filter(m => m.globals.every(g => typeof window[g] === 'undefined'));
+        if (missing.length === 0) return;
+        const list = document.getElementById('missingLibList');
+        missing.forEach(m => {
+            const li = document.createElement('li');
+            li.innerHTML = `<code style="background:rgba(0,0,0,0.08);padding:1px 4px;border-radius:3px;">${m.file}</code>（启用 ${m.algos}）— <a href="${m.url}" target="_blank" rel="noopener" style="color:#b45309;word-break:break-all;">${m.url}</a>`;
+            list.appendChild(li);
+        });
+        document.getElementById('missingLibBanner').style.display = 'block';
+    }
+
     // --- 页面初始化 ---
     initAlgoCheckboxes();
+    checkMissingLibs();
 </script>
 
 </body>
