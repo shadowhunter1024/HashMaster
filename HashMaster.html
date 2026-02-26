@@ -4,6 +4,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HashMaster Ultimate (Infinite Colors)</title>
+
+    <!-- ===== 可选外部哈希库 =====
+         将对应 .min.js 文件放在与 index.html 相同目录即可启用对应算法。
+         文件不存在时该算法不显示，不影响其他功能。
+
+         下载地址：
+           spark-md5.min.js  → https://cdn.jsdelivr.net/npm/spark-md5/spark-md5.min.js
+           sha3.min.js       → https://cdn.jsdelivr.net/npm/js-sha3/build/sha3.min.js
+           blakejs.min.js    → https://cdn.jsdelivr.net/npm/blakejs/blakejs.min.js
+           crypto-js.min.js  → https://cdn.jsdelivr.net/npm/crypto-js/crypto-js.js  (另存为 crypto-js.min.js)
+           crc32.min.js      → https://cdn.jsdelivr.net/npm/crc-32/crc32.min.js
+           adler32.min.js    → https://cdn.jsdelivr.net/npm/adler-32/adler32.min.js
+           sm-crypto.min.js  → https://cdn.jsdelivr.net/npm/sm-crypto/dist/sm-crypto.min.js
+    ===== -->
+
+    <!-- MD5 → window.SparkMD5 -->
+    <script src="./spark-md5.min.js" onerror="console.warn('[HashMaster] spark-md5.min.js 未找到，MD5 不可用')"></script>
+    <!-- SHA3-256/512, Keccak-256 → window.sha3_256, sha3_512, keccak_256 -->
+    <script src="./sha3.min.js" onerror="console.warn('[HashMaster] sha3.min.js 未找到，SHA3/Keccak 不可用')"></script>
+    <!-- BLAKE2b/BLAKE2s → window.blakejs -->
+    <script src="./blakejs.min.js" onerror="console.warn('[HashMaster] blakejs.min.js 未找到，BLAKE2 不可用')"></script>
+    <!-- RIPEMD-160, Whirlpool → window.CryptoJS -->
+    <script src="./crypto-js.min.js" onerror="console.warn('[HashMaster] crypto-js.min.js 未找到，RIPEMD-160/Whirlpool 不可用')"></script>
+    <!-- CRC32 → window.CRC32 -->
+    <script src="./crc32.min.js" onerror="console.warn('[HashMaster] crc32.min.js 未找到，CRC32 不可用')"></script>
+    <!-- Adler32 → window.Adler32 -->
+    <script src="./adler32.min.js" onerror="console.warn('[HashMaster] adler32.min.js 未找到，Adler32 不可用')"></script>
+    <!-- SM3 → window.smCrypto -->
+    <script src="./sm-crypto.min.js" onerror="console.warn('[HashMaster] sm-crypto.min.js 未找到，SM3 不可用')"></script>
+
     <style>
         :root {
             --primary: #4f46e5;
@@ -13,7 +43,7 @@
             --text-sub: #64748b;
             --border: #e2e8f0;
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            --match-bg: #22c55e; /* 目标匹配强制绿色 */
+            --match-bg: #22c55e;
             --match-text: #ffffff;
             --progress-bg: #e2e8f0;
         }
@@ -41,10 +71,41 @@
 
         /* 配置面板 */
         .config-panel { background: var(--surface); padding: 20px; border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); margin-bottom: 20px; }
-        
-        .algo-group { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dashed var(--border); }
-        .checkbox-label { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; font-weight: 500; font-size: 14px; }
-        input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer; }
+
+        /* 算法分类布局 */
+        .algo-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed var(--border);
+        }
+        .algo-section-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-sub);
+            margin-bottom: 2px;
+        }
+        .algo-cat-block {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .algo-category {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            min-width: 72px;
+            flex-shrink: 0;
+            padding-top: 2px;
+        }
+        .algo-items { display: flex; flex-wrap: wrap; gap: 8px 16px; flex: 1; }
+        .checkbox-label { display: flex; align-items: center; gap: 5px; cursor: pointer; user-select: none; font-weight: 500; font-size: 13px; }
+        input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--primary); cursor: pointer; }
 
         .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
         .target-input { flex: 1; min-width: 200px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); color: var(--text-main); font-family: monospace; font-size: 13px; }
@@ -65,6 +126,13 @@
 
         /* 表格 */
         .table-card { background: var(--surface); border-radius: 12px; border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+        .table-card:fullscreen,
+        .table-card:-webkit-full-screen,
+        .table-card:-moz-full-screen {
+            overflow-y: auto;
+            border-radius: 0;
+            background: var(--surface);
+        }
         table { width: 100%; border-collapse: collapse; }
         th { background: rgba(0,0,0,0.02); color: var(--text-sub); font-size: 0.8rem; text-transform: uppercase; padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); }
         td { padding: 16px; border-bottom: 1px solid var(--border); vertical-align: top; }
@@ -73,7 +141,7 @@
         /* Hash 内容 */
         .hash-list { display: flex; flex-direction: column; gap: 6px; }
         .hash-row { display: flex; align-items: center; gap: 10px; font-size: 13px; }
-        .algo-tag { width: 65px; font-weight: 600; color: var(--text-sub); font-size: 11px; text-align: right; }
+        .algo-tag { width: 85px; font-weight: 600; color: var(--text-sub); font-size: 11px; text-align: right; flex-shrink: 0; }
         .hash-val { font-family: monospace; word-break: break-all; color: var(--text-main); flex: 1; font-size: 12px; }
         .btn-copy-mini { opacity: 0; padding: 2px 6px; font-size: 10px; border: 1px solid var(--border); background: var(--surface); border-radius: 4px; cursor: pointer; color: var(--text-sub); }
         .hash-row:hover .btn-copy-mini { opacity: 1; }
@@ -83,7 +151,7 @@
             font-size: 10px; padding: 1px 6px; border-radius: 10px; margin-right: 8px;
             font-weight: bold; border: 1px solid; display: inline-block;
         }
-        
+
         /* 目标匹配高亮 (优先级最高) */
         .target-match-span { background-color: var(--match-bg); color: var(--match-text); padding: 1px 4px; border-radius: 3px; }
         .row-target-matched { background-color: rgba(34, 197, 94, 0.1) !important; box-shadow: inset 4px 0 0 var(--match-bg) !important; }
@@ -104,18 +172,16 @@
     </nav>
 
     <div class="config-panel">
-        <div class="algo-group">
-            <span style="color:var(--text-sub); font-size:0.9rem; margin-right:5px;">算法:</span>
-            <label class="checkbox-label"><input type="checkbox" value="SHA-1" checked onchange="handleConfigChange()"> SHA-1</label>
-            <label class="checkbox-label"><input type="checkbox" value="SHA-256" checked onchange="handleConfigChange()"> SHA-256</label>
-            <label class="checkbox-label"><input type="checkbox" value="SHA-384" onchange="handleConfigChange()"> SHA-384</label>
-            <label class="checkbox-label"><input type="checkbox" value="SHA-512" onchange="handleConfigChange()"> SHA-512</label>
+        <div class="algo-group" id="algoGroup">
+            <span class="algo-section-title">算法:</span>
+            <!-- 复选框由 initAlgoCheckboxes() 动态生成 -->
         </div>
-        
+
         <div class="toolbar">
             <input type="text" id="targetHash" class="target-input" placeholder="🎯 粘贴 Hash 值自动查找..." oninput="checkMatches()">
             <button class="btn btn-secondary" onclick="copyAllHashes()">📋 复制全部</button>
             <button class="btn btn-secondary" onclick="exportCSV()">📥 导出 CSV</button>
+            <button class="btn btn-secondary" onclick="toggleFullscreen()" id="fullscreenBtn">⛶ 全屏</button>
             <button class="btn btn-danger" onclick="clearAll()">🗑️ 清空</button>
         </div>
     </div>
@@ -127,7 +193,7 @@
         <input type="file" id="fileInput" multiple style="display:none">
     </div>
 
-    <div class="table-card">
+    <div class="table-card" id="tableCard">
         <table id="hashTable">
             <thead>
                 <tr>
@@ -144,11 +210,180 @@
 <div id="toast" class="toast"></div>
 
 <script>
+    // ============================================================
+    // 工具函数
+    // ============================================================
+    function bufToHex(arrayBuffer) {
+        return Array.from(new Uint8Array(arrayBuffer))
+            .map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+    function isLibAvailable(globalName) {
+        return typeof window[globalName] !== 'undefined';
+    }
+    function getAvailableAlgoConfigs() {
+        return ALGO_CONFIGS.filter(cfg => cfg.available());
+    }
+    // CryptoJS WordArray 兼容构建（支持所有 CryptoJS 版本）
+    function toWordArray(u8arr) {
+        const words = [];
+        for (let i = 0; i < u8arr.length; i++) {
+            words[i >>> 2] |= u8arr[i] << (24 - (i % 4) * 8);
+        }
+        return CryptoJS.lib.WordArray.create(words, u8arr.length);
+    }
+
+    // ============================================================
+    // 算法配置表
+    // 新增算法：在此追加一条记录即可，无需修改其他代码
+    //   category : 分类名（用于 UI 分组）
+    //   label    : 显示名称
+    //   value    : 算法 ID（item.results 的键）
+    //   defaultOn: 默认是否选中（已全部设为 false，由用户自选）
+    //   available: 返回 true 表示对应库已加载
+    //   compute  : 接收 ArrayBuffer，返回 hex 字符串（支持同步/异步）
+    // ============================================================
+    const ALGO_CONFIGS = [
+
+        // ----- SHA 标准（Web Crypto API 内置，始终可用）-----
+        { category:'SHA 标准', label:'SHA-1',   value:'SHA-1',   defaultOn:false, available:()=>true,
+          compute: async b => bufToHex(await crypto.subtle.digest('SHA-1', b)) },
+        { category:'SHA 标准', label:'SHA-256', value:'SHA-256', defaultOn:false, available:()=>true,
+          compute: async b => bufToHex(await crypto.subtle.digest('SHA-256', b)) },
+        { category:'SHA 标准', label:'SHA-384', value:'SHA-384', defaultOn:false, available:()=>true,
+          compute: async b => bufToHex(await crypto.subtle.digest('SHA-384', b)) },
+        { category:'SHA 标准', label:'SHA-512', value:'SHA-512', defaultOn:false, available:()=>true,
+          compute: async b => bufToHex(await crypto.subtle.digest('SHA-512', b)) },
+
+        // ----- SHA-3 系列（需 sha3.min.js）-----
+        { category:'SHA-3', label:'SHA3-256', value:'SHA3-256', defaultOn:false,
+          available: () => isLibAvailable('sha3_256'),
+          compute: b => sha3_256(new Uint8Array(b)) },
+        { category:'SHA-3', label:'SHA3-512', value:'SHA3-512', defaultOn:false,
+          available: () => isLibAvailable('sha3_512'),
+          compute: b => sha3_512(new Uint8Array(b)) },
+
+        // ----- 传统哈希 -----
+        // 需 spark-md5.min.js → window.SparkMD5
+        { category:'传统哈希', label:'MD5', value:'MD5', defaultOn:false,
+          available: () => isLibAvailable('SparkMD5'),
+          compute: b => SparkMD5.ArrayBuffer.hash(b) },
+        // 需 crypto-js.min.js → window.CryptoJS
+        { category:'传统哈希', label:'RIPEMD-160', value:'RIPEMD-160', defaultOn:false,
+          available: () => isLibAvailable('CryptoJS') && !!CryptoJS.RIPEMD160,
+          compute: b => CryptoJS.RIPEMD160(toWordArray(new Uint8Array(b))).toString() },
+
+        // ----- 现代哈希 -----
+        // 需 blakejs.min.js → window.blakejs
+        { category:'现代哈希', label:'BLAKE2b-512', value:'BLAKE2b', defaultOn:false,
+          available: () => isLibAvailable('blakejs'),
+          compute: b => blakejs.blake2bHex(new Uint8Array(b), null, 64) },
+        { category:'现代哈希', label:'BLAKE2s-256', value:'BLAKE2s', defaultOn:false,
+          available: () => isLibAvailable('blakejs'),
+          compute: b => blakejs.blake2sHex(new Uint8Array(b), null, 32) },
+        // 需 sha3.min.js → window.keccak_256
+        { category:'现代哈希', label:'Keccak-256', value:'Keccak-256', defaultOn:false,
+          available: () => isLibAvailable('keccak_256'),
+          compute: b => keccak_256(new Uint8Array(b)) },
+        // 需 sm-crypto.min.js → window.smCrypto
+        { category:'现代哈希', label:'SM3', value:'SM3', defaultOn:false,
+          available: () => isLibAvailable('smCrypto') && typeof smCrypto.sm3 === 'function',
+          compute: b => {
+              const hex = Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join('');
+              return smCrypto.sm3(hex);
+          }},
+
+        // ----- 校验和 -----
+        // 需 crc32.min.js → window.CRC32
+        { category:'校验和', label:'CRC32', value:'CRC32', defaultOn:false,
+          available: () => isLibAvailable('CRC32'),
+          compute: b => (CRC32.buf(new Uint8Array(b)) >>> 0).toString(16).padStart(8, '0') },
+        // CRC16-Modbus（内置，无需外部库）
+        { category:'校验和', label:'CRC16', value:'CRC16', defaultOn:false, available: () => true,
+          compute: b => {
+              const d = new Uint8Array(b); let c = 0xFFFF;
+              for (let i = 0; i < d.length; i++) {
+                  c ^= d[i];
+                  for (let j = 0; j < 8; j++) c = (c & 1) ? (c >>> 1) ^ 0xA001 : (c >>> 1);
+              }
+              return c.toString(16).padStart(4, '0');
+          }},
+        // 需 adler32.min.js → window.Adler32
+        { category:'校验和', label:'Adler32', value:'Adler32', defaultOn:false,
+          available: () => isLibAvailable('Adler32'),
+          compute: b => (Adler32.buf(new Uint8Array(b)) >>> 0).toString(16).padStart(8, '0') },
+        // 需 crypto-js.min.js → window.CryptoJS.algo.Whirlpool
+        { category:'校验和', label:'Whirlpool', value:'Whirlpool', defaultOn:false,
+          available: () => isLibAvailable('CryptoJS') && !!(CryptoJS.algo && CryptoJS.algo.Whirlpool),
+          compute: b => CryptoJS.algo.Whirlpool.create().finalize(toWordArray(new Uint8Array(b))).toString() },
+    ];
+
+    // 统一哈希计算入口（兼容同步/异步 compute 函数）
+    async function computeHash(algoValue, arrayBuffer) {
+        const cfg = ALGO_CONFIGS.find(c => c.value === algoValue);
+        if (!cfg) throw new Error('未知算法: ' + algoValue);
+        return Promise.resolve(cfg.compute(arrayBuffer));
+    }
+
+    // 动态生成算法复选框（带分类）
+    function initAlgoCheckboxes() {
+        const algoGroup = document.getElementById('algoGroup');
+        const titleEl = algoGroup.querySelector('.algo-section-title');
+        algoGroup.innerHTML = '';
+        if (titleEl) algoGroup.appendChild(titleEl);
+
+        const available = getAvailableAlgoConfigs();
+        const categories = [...new Set(available.map(c => c.category))];
+
+        categories.forEach(cat => {
+            const block = document.createElement('div');
+            block.className = 'algo-cat-block';
+
+            const catLabel = document.createElement('span');
+            catLabel.className = 'algo-category';
+            catLabel.textContent = cat;
+            block.appendChild(catLabel);
+
+            const items = document.createElement('div');
+            items.className = 'algo-items';
+
+            available.filter(c => c.category === cat).forEach(cfg => {
+                const lbl = document.createElement('label');
+                lbl.className = 'checkbox-label';
+                const cb = document.createElement('input');
+                cb.type = 'checkbox'; cb.value = cfg.value; cb.checked = cfg.defaultOn;
+                cb.addEventListener('change', handleConfigChange);
+                lbl.appendChild(cb);
+                lbl.appendChild(document.createTextNode(' ' + cfg.label));
+                items.appendChild(lbl);
+            });
+
+            block.appendChild(items);
+            algoGroup.appendChild(block);
+        });
+    }
+
+    // 结果窗口全屏切换
+    function toggleFullscreen() {
+        const el = document.getElementById('tableCard');
+        if (!document.fullscreenElement) {
+            el.requestFullscreen && el.requestFullscreen().catch(() => showToast('全屏不可用'));
+        } else {
+            document.exitFullscreen && document.exitFullscreen();
+        }
+    }
+    document.addEventListener('fullscreenchange', () => {
+        const btn = document.getElementById('fullscreenBtn');
+        if (btn) btn.textContent = document.fullscreenElement ? '✕ 退出全屏' : '⛶ 全屏';
+    });
+
+    // ============================================================
+    // 原有代码（保持不变）
+    // ============================================================
     const fileInput = document.getElementById('fileInput');
     const dropZone = document.getElementById('dropZone');
     const tableBody = document.getElementById('tableBody');
     const targetInput = document.getElementById('targetHash');
-    
+
     let filesMap = new Map();
     let isDarkMode = false;
 
@@ -159,10 +394,9 @@
         const next = current === 'dark' ? 'light' : 'dark';
         html.setAttribute('data-theme', next);
         isDarkMode = (next === 'dark');
-        highlightAndMatch(); // 主题切换时重新计算颜色
+        highlightAndMatch();
     }
-    
-    // 初始化检测
+
     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
         document.documentElement.setAttribute('data-theme', 'dark');
         isDarkMode = true;
@@ -191,7 +425,7 @@
 
     async function processQueue() {
         const activeAlgos = getActiveAlgos();
-        
+
         for (let [id, item] of filesMap) {
             const allDone = activeAlgos.every(algo => item.results[algo]);
             if (allDone) continue;
@@ -208,12 +442,10 @@
                 item.status = 'computing';
                 item.progress = 100;
                 updateRow(item);
-                
+
                 const tasks = activeAlgos.map(async (algo) => {
                     if (item.results[algo]) return;
-                    const hashBuf = await crypto.subtle.digest(algo, arrayBuffer);
-                    const hashArr = Array.from(new Uint8Array(hashBuf));
-                    item.results[algo] = hashArr.map(b => b.toString(16).padStart(2, '0')).join('');
+                    item.results[algo] = await computeHash(algo, arrayBuffer);
                 });
 
                 await Promise.all(tasks);
@@ -230,19 +462,16 @@
 
     // --- 颜色生成算法 (核心改进) ---
     function generateDynamicColor(index) {
-        // 使用黄金角度 (Golden Angle ≈ 137.508°) 确保颜色分布均匀且不重复
         const goldenAngle = 137.508;
-        const hue = (index * goldenAngle) % 360; 
+        const hue = (index * goldenAngle) % 360;
 
         if (isDarkMode) {
-            // 深色模式：背景深，边框亮
             return {
-                bg: `hsla(${hue}, 60%, 20%, 0.3)`, 
+                bg: `hsla(${hue}, 60%, 20%, 0.3)`,
                 border: `hsl(${hue}, 70%, 60%)`,
-                badge: `hsl(${hue}, 70%, 80%)` // 徽章文字色
+                badge: `hsl(${hue}, 70%, 80%)`
             };
         } else {
-            // 浅色模式：背景浅，边框深
             return {
                 bg: `hsla(${hue}, 80%, 92%, 0.6)`,
                 border: `hsl(${hue}, 70%, 45%)`,
@@ -317,13 +546,11 @@
     function highlightAndMatch() {
         const target = targetInput.value.trim().toLowerCase();
         const activeAlgos = getActiveAlgos();
-        const primaryAlgo = activeAlgos[0]; 
-        
-        // 1. 查找重复组
-        const hashToGroupIndex = {}; // Hash -> GroupIndex (0, 1, 2...)
+        const primaryAlgo = activeAlgos[0];
+
+        const hashToGroupIndex = {};
         let groupCounter = 0;
 
-        // 统计所有 Hash 的出现情况
         const hashCounts = {};
         filesMap.forEach(item => {
             if (item.status === 'done' && primaryAlgo && item.results[primaryAlgo]) {
@@ -332,20 +559,15 @@
             }
         });
 
-        // 为每个重复的 Hash 分配一个唯一的递增 ID
         for (let h in hashCounts) {
-            if (hashCounts[h] > 1) {
-                hashToGroupIndex[h] = groupCounter++;
-            }
+            if (hashCounts[h] > 1) hashToGroupIndex[h] = groupCounter++;
         }
 
-        // 2. 应用样式
         filesMap.forEach(item => {
             const tr = document.getElementById(`row-${item.id}`);
             const badge = document.getElementById(`badge-${item.id}`);
             if (!tr) return;
 
-            // 重置
             tr.style.backgroundColor = '';
             tr.style.boxShadow = '';
             tr.classList.remove('row-target-matched');
@@ -354,7 +576,6 @@
                 el.outerHTML = el.innerText;
             });
 
-            // A. 目标匹配 (优先级最高)
             let isTargetMatched = false;
             if (target) {
                 for (const [algo, hash] of Object.entries(item.results)) {
@@ -368,22 +589,16 @@
 
             if (isTargetMatched) {
                 tr.classList.add('row-target-matched');
-                return; // 如果匹配了目标，就不显示重复组颜色，避免混淆
+                return;
             }
 
-            // B. 重复组高亮 (无限颜色)
             if (item.status === 'done' && primaryAlgo && item.results[primaryAlgo]) {
                 const currentHash = item.results[primaryAlgo];
                 if (hashToGroupIndex.hasOwnProperty(currentHash)) {
                     const groupIdx = hashToGroupIndex[currentHash];
-                    
-                    // 动态生成颜色
                     const style = generateDynamicColor(groupIdx);
-                    
                     tr.style.backgroundColor = style.bg;
                     tr.style.boxShadow = `inset 4px 0 0 ${style.border}`;
-                    
-                    // 显示 "Group #X" 徽章
                     if (badge) {
                         badge.style.display = 'inline-block';
                         badge.innerText = `#${groupIdx + 1}`;
@@ -450,8 +665,10 @@
     function clearAll() { filesMap.clear(); renderTable(); targetInput.value=''; showToast('已清空'); }
     function copyText(t) { if(t==='...')return; navigator.clipboard.writeText(t).then(()=>showToast('已复制')); }
     function formatSize(b) { if(!b) return '0 B'; const i = Math.floor(Math.log(b)/Math.log(1024)); return (b/Math.pow(1024,i)).toFixed(2)+' '+['B','KB','MB','GB','TB'][i]; }
+
+    // --- 页面初始化 ---
+    initAlgoCheckboxes();
 </script>
 
 </body>
 </html>
-
